@@ -1,0 +1,99 @@
+Terms of Service
+VRChat Age Verification Bot
+Last Updated: June 5, 2026
+
+1. Acceptance of Terms
+By using the VRChat Age Verification Bot ("the Bot"), including the /vrcverify command or accessing the verification page, you agree to be bound by these Terms of Service. If you do not agree, do not use the Bot.
+
+2. Description of Service
+The Bot provides age verification services for Discord servers by checking the age verification status on your VRChat account. Upon successful verification, the Bot assigns a designated role in the Discord server where verification was initiated.
+
+3. Eligibility
+By using this Bot you confirm that:
+
+You are 18 years of age or older
+You are the rightful owner of the VRChat account used to verify
+You have the legal right to use this service in your jurisdiction
+You are not attempting to verify on behalf of another person
+Your VRChat account has legitimate age verification through VRChat's official process
+
+
+4. User Responsibilities
+You agree that you will NOT:
+
+Attempt to bypass, exploit, or abuse the verification system
+Share your verification link with other users
+Use another person's VRChat account to obtain verification
+Attempt to reverse engineer or tamper with the Bot
+Use automated tools or bots to interact with the verification page
+Attempt any form of injection attack, scraping, or unauthorized access
+Provide false information to obtain the 18+ role
+
+Violation of any of the above may result in permanent removal of your role and a ban from the server.
+
+5. Credential Handling
+By submitting your VRChat credentials through the verification page, you acknowledge and agree that:
+
+Your credentials are used solely to check your age verification status via VRChat's API
+Your credentials are transmitted securely over HTTPS
+Your credentials are never stored, logged, or retained in any form
+You are voluntarily providing your credentials and do so at your own risk
+You should only use this service on a trusted device and network
+
+We strongly recommend enabling two-factor authentication on your VRChat account.
+
+6. No Warranty
+The Bot is provided "as is" without any warranty of any kind, express or implied. We do not guarantee:
+
+Uninterrupted or error-free operation
+That the Bot will always be available
+That verification results will always be accurate
+Compatibility with future changes to VRChat's or Discord's APIs
+
+
+7. Limitation of Liability
+To the maximum extent permitted by law, we are not liable for:
+
+Any loss or damage arising from your use of the Bot
+Any unauthorized access to your VRChat or Discord account
+Any issues arising from VRChat's or Discord's own services
+Any interruption or discontinuation of the Bot's service
+
+
+8. Third Party Services
+This Bot relies on third party services including VRChat and Discord. Your use of those services is governed by their own terms:
+
+VRChat Terms of Service
+Discord Terms of Service
+Railway Terms of Service
+
+We are not affiliated with, endorsed by, or officially connected to VRChat or Discord.
+
+9. Server Administrator Responsibilities
+Discord server administrators who add this Bot to their server agree to:
+
+Use the Bot only for legitimate age verification purposes
+Not use the Bot to collect or harvest user data
+Inform their server members about the verification process
+Ensure their server complies with Discord's Community Guidelines
+Take responsibility for how the Bot is used within their server
+
+
+10. Termination
+We reserve the right to:
+
+Discontinue the Bot at any time without notice
+Remove access for users or servers that violate these terms
+Modify or suspend the service at any time
+
+
+11. Changes to These Terms
+These Terms of Service may be updated at any time. Continued use of the Bot after changes are posted constitutes acceptance of the updated terms. It is your responsibility to review these terms periodically.
+
+12. Governing Law
+These terms shall be governed by and construed in accordance with applicable law. Any disputes arising from use of this Bot shall be resolved through the Discord server's moderation team in the first instance.
+
+13. Contact
+If you have questions about these Terms of Service, please contact a server administrator directly through Discord.
+
+These Terms of Service apply solely to the VRChat Age Verification Bot and do not represent any official affiliation with VRChat or Discord.
