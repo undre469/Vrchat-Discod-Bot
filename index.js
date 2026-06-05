@@ -8,6 +8,7 @@ const { CookieJar } = require('tough-cookie');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -15,6 +16,7 @@ const GUILD_ID = process.env.GUILD_ID;
 const ROLE_18_PLUS_ID = process.env.ROLE_18_PLUS_ID;
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost';
 const PORT = process.env.PORT || 3000;
+const LINK_SECRET = process.env.LINK_SECRET || 'changethis_in_env';
 
 const VRCHAT_API = 'https://api.vrchat.cloud/api/1';
 const USER_AGENT = 'VRChatAgeVerifyBot/1.0.0 (Discord Age Verification Bot; contact@gmail.com)';
@@ -98,10 +100,18 @@ client.on('interactionCreate', async interaction => {
         flags: 64
       });
     }
-    const url = `${SERVER_URL}/verify?discordId=${interaction.user.id}`;
+
+    // Generate a signed token that expires in 15 minutes
+    const token = jwt.sign(
+      { discordId: interaction.user.id },
+      LINK_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    const url = `${SERVER_URL}/verify?token=${token}`;
     try {
       await interaction.reply({
-        content: `🔞 Click the link below to verify your VRChat age:\n${url}\n\n⚠️ Your credentials are used only to check your age status and are **never stored**.`,
+        content: `🔞 Click the link below to verify your VRChat age:\n${url}\n\n⚠️ This link expires in **15 minutes** and can only be used once.\n⚠️ Your credentials are used only to check your age status and are **never stored**.`,
         flags: 64
       });
     } catch (err) {
@@ -251,7 +261,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: '❌ Too many attempts. Please wait 15 minutes and try again.',
+  message: 'Too many attempts. Please wait 15 minutes and try again.',
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -280,17 +290,26 @@ const page = (title, color, body) => `
 
 // Step 1 — Show login form
 app.get('/verify', (req, res) => {
-  const { discordId } = req.query;
+  const { token } = req.query;
 
-  if (!discordId || !/^\d{17,19}$/.test(discordId)) {
-    return res.status(400).send('❌ Invalid verification link. Please use /vrcverify in Discord.');
+  // Verify the JWT token
+  let discordId;
+  try {
+    const decoded = jwt.verify(token, LINK_SECRET);
+    discordId = decoded.discordId;
+  } catch (err) {
+    return res.status(400).send(page('Link Expired', '#e74c3c', `
+      <h2>Link Expired or Invalid</h2>
+      <p>This verification link has expired or is invalid.</p>
+      <p>Please use <strong>/vrcverify</strong> in Discord to get a new link.</p>
+    `));
   }
 
   res.send(page('VRChat Age Verification', '#7289da', `
-    <h2>🔞 VRChat Age Verification</h2>
+    <h2>VRChat Age Verification</h2>
     <p>Log in with your VRChat account. Credentials are used <strong>only</strong> to check your age status and are <strong>never stored</strong>.</p>
     <form method="POST" action="/do-verify">
-      <input type="hidden" name="discordId" value="${discordId}" />
+      <input type="hidden" name="token" value="${token}" />
       <label>VRChat Username or Email</label>
       <input type="text" name="username" required autocomplete="off" />
       <label>Password</label>
@@ -299,25 +318,35 @@ app.get('/verify', (req, res) => {
       <input type="text" name="totp" autocomplete="off" maxlength="6" />
       <button type="submit">Verify My Age →</button>
     </form>
-    <p class="note">🔒 Credentials are transmitted securely and never stored. No database exists on this server.</p>
-    <p class="note">⚠️ Only use this on trusted servers. This page is not affiliated with VRChat.</p>
+    <p class="note">Credentials are transmitted securely and never stored. No database exists on this server.</p>
+    <p class="note">Only use this on trusted servers. This page is not affiliated with VRChat.</p>
   `));
 });
 
 // Step 2 — Handle login + age check
 app.post('/do-verify', async (req, res) => {
-  const { username, password, totp, discordId } = req.body;
+  const { username, password, totp, token } = req.body;
   req.body = {};
 
-  if (!discordId || !/^\d{17,19}$/.test(discordId)) {
-    return res.status(400).send('❌ Invalid request.');
+  // Verify the JWT token
+  let discordId;
+  try {
+    const decoded = jwt.verify(token, LINK_SECRET);
+    discordId = decoded.discordId;
+  } catch (err) {
+    return res.status(400).send(page('Link Expired', '#e74c3c', `
+      <h2>Link Expired or Invalid</h2>
+      <p>This verification link has expired or is invalid.</p>
+      <p>Please use <strong>/vrcverify</strong> in Discord to get a new link.</p>
+    `));
   }
 
+  // Sanitize inputs
   const cleanUsername = validator.escape(username?.trim() || '');
   const cleanTotp = validator.escape(totp?.trim() || '');
 
-  if (!cleanUsername || !password || !discordId) {
-    return res.send('❌ Missing fields. Please go back and try again.');
+  if (!cleanUsername || !password) {
+    return res.send('Missing fields. Please go back and try again.');
   }
 
   try {
@@ -347,14 +376,14 @@ app.post('/do-verify', async (req, res) => {
     });
 
     let userData = loginRes.data;
-    console.log(`📦 Checking 2FA status...`);
+    console.log(`Checking 2FA status...`);
 
     if (Array.isArray(userData.requiresTwoFactorAuth) && userData.requiresTwoFactorAuth.length > 0) {
       const twoFactorType = userData.requiresTwoFactorAuth[0];
 
       if (!cleanTotp) {
         return res.send(page('2FA Required', '#e67e22', `
-          <h2>⚠️ 2FA Required</h2>
+          <h2>2FA Required</h2>
           <p>Your VRChat account has <strong>${twoFactorType === 'emailOtp' ? 'email' : 'authenticator app'} 2FA</strong> enabled.</p>
           <p>Please go back and enter your 2FA code in the field provided.</p>
           <a href="javascript:history.back()">← Go Back</a>
@@ -365,7 +394,7 @@ app.post('/do-verify', async (req, res) => {
         ? '/auth/twofactorauth/emailotp/verify'
         : '/auth/twofactorauth/totp/verify';
 
-      console.log(`🔑 Verifying 2FA...`);
+      console.log(`Verifying 2FA...`);
       const twoFaRes = await http.post(twoFaEndpoint, { code: cleanTotp });
 
       if (!twoFaRes.data?.verified) {
@@ -376,22 +405,22 @@ app.post('/do-verify', async (req, res) => {
         `));
       }
 
-      console.log(`✅ 2FA verified, re-fetching user data...`);
+      console.log(`2FA verified, re-fetching user data...`);
       const userRes = await http.get('/auth/user');
       userData = userRes.data;
     }
 
-    console.log(`🔍 Checking age verification status...`);
+    console.log(`Checking age verification status...`);
     await handleVerification(userData, discordId, res);
 
   } catch (err) {
     const status = err.response?.status;
     const errData = err.response?.data;
-    console.error(`❌ VRChat API error [${status}]:`, JSON.stringify(errData) || err.message);
+    console.error(`VRChat API error [${status}]:`, JSON.stringify(errData) || err.message);
 
     if (status === 401) {
       return res.send(page('Login Failed', '#e74c3c', `
-        <h2>❌ Login Failed</h2>
+        <h2>Login Failed</h2>
         <p>Incorrect username or password. Please go back and try again.</p>
         <a href="javascript:history.back()">← Go Back</a>
       `));
@@ -399,13 +428,13 @@ app.post('/do-verify', async (req, res) => {
 
     if (status === 429) {
       return res.send(page('Rate Limited', '#e74c3c', `
-        <h2>⏳ Rate Limited</h2>
+        <h2>Rate Limited</h2>
         <p>Too many login attempts. Please wait a few minutes and try again.</p>
       `));
     }
 
     res.send(page('Error', '#e74c3c', `
-      <h2>❌ Error</h2>
+      <h2>Error</h2>
       <p>Something went wrong while contacting VRChat. Please try again later.</p>
     `));
   }
@@ -422,31 +451,31 @@ async function handleVerification(userData, discordId, res) {
 
       if (member.roles.cache.has(ROLE_18_PLUS_ID)) {
         return res.send(page('Already Verified', '#2ecc71', `
-          <h2>✅ Already Verified</h2>
+          <h2>Already Verified</h2>
           <p>You already have the 18+ role in Discord. You're good to go!</p>
         `));
       }
 
       await member.roles.add(ROLE_18_PLUS_ID);
-      console.log(`✅ Role assigned successfully`);
+      console.log(`Role assigned successfully`);
 
       return res.send(page('Verified!', '#2ecc71', `
-        <h2>✅ Verified!</h2>
+        <h2>Verified!</h2>
         <p>Your VRChat age verification checks out.</p>
         <p>The <strong>18+</strong> role has been assigned in Discord. You can close this page.</p>
       `));
 
     } catch (err) {
-      console.error('❌ Discord role error:', err);
+      console.error('Discord role error:', err);
       return res.send(page('Role Assignment Failed', '#e74c3c', `
-        <h2>⚠️ Role Assignment Failed</h2>
+        <h2>Role Assignment Failed</h2>
         <p>Your VRChat account is age verified, but the bot couldn't assign the role. Please contact a moderator.</p>
       `));
     }
 
   } else {
     return res.send(page('Not Verified', '#e74c3c', `
-      <h2>❌ Not Age Verified</h2>
+      <h2>Not Age Verified</h2>
       <p>Your VRChat account does not have 18+ age verification. The role has not been assigned.</p>
       <p>To get verified, visit your <a href="https://vrchat.com/home/profile" target="_blank">VRChat profile settings</a> and complete age verification.</p>
     `));
@@ -455,9 +484,9 @@ async function handleVerification(userData, discordId, res) {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('❌ Unhandled error:', err.message);
+  console.error('Unhandled error:', err.message);
   res.status(500).send(page('Error', '#e74c3c', `
-    <h2>❌ Server Error</h2>
+    <h2>Server Error</h2>
     <p>Something went wrong. Please try again later.</p>
   `));
 });

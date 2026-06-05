@@ -4,3 +4,4 @@ GUILD_ID=
 ROLE_18_PLUS_ID=
 SERVER_URL=
 PORT=3000
+LINK_SECRET=some_long_random_string_here_make_it_at_least_32_chars
