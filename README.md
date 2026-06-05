@@ -34,3 +34,5 @@ ROLE_18_PLUS_ID=your_role_id_here
 SERVER_URL=https://your-domain-or-railway-url-here
 
 PORT=3000
+
+LINK_SECRET=some_long_random_string_here_make_it_at_least_32_chars
