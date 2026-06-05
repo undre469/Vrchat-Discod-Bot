@@ -22,9 +22,15 @@ No data is stored. Credentials are used only to check age status and discarded i
 5. Run `node index.js` to start the bot
 
 ## .env values needed
+
 DISCORD_TOKEN=your_bot_token_here
+
 CLIENT_ID=your_application_id_here
+
 GUILD_ID=your_server_id_here
+
 ROLE_18_PLUS_ID=your_role_id_here
+
 SERVER_URL=https://your-domain-or-railway-url-here
+
 PORT=3000
