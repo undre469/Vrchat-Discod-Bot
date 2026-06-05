@@ -95,62 +95,66 @@ client.on('interactionCreate', async interaction => {
     if (member.roles.cache.has(ROLE_18_PLUS_ID)) {
       return interaction.reply({
         content: '✅ You already have the 18+ role!',
-        ephemeral: true
+        flags: 64
       });
     }
     const url = `${SERVER_URL}/verify?discordId=${interaction.user.id}`;
-    await interaction.reply({
-      content: `🔞 Click the link below to verify your VRChat age:\n${url}\n\n⚠️ Your credentials are used only to check your age status and are **never stored**.`,
-      ephemeral: true
-    });
+    try {
+      await interaction.reply({
+        content: `🔞 Click the link below to verify your VRChat age:\n${url}\n\n⚠️ Your credentials are used only to check your age status and are **never stored**.`,
+        flags: 64
+      });
+    } catch (err) {
+      console.error('Failed to reply to interaction:', err.message);
+    }
   }
 
   // --- /giverole ---
   if (interaction.commandName === 'giverole') {
     if (!isAdmin) {
-      return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+      return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
     }
     const targetUser = interaction.options.getUser('user');
     try {
       const guild = await client.guilds.fetch(GUILD_ID);
       const member = await guild.members.fetch(targetUser.id);
       if (member.roles.cache.has(ROLE_18_PLUS_ID)) {
-        return interaction.reply({ content: `⚠️ ${targetUser.tag} already has the 18+ role.`, ephemeral: true });
+        return interaction.reply({ content: `⚠️ ${targetUser.tag} already has the 18+ role.`, flags: 64 });
       }
       await member.roles.add(ROLE_18_PLUS_ID);
       console.log(`✅ Admin manually gave 18+ role`);
-      return interaction.reply({ content: `✅ Successfully gave the 18+ role to ${targetUser.tag}.`, ephemeral: true });
+      return interaction.reply({ content: `✅ Successfully gave the 18+ role to ${targetUser.tag}.`, flags: 64 });
     } catch (err) {
       console.error('❌ giverole error:', err);
-      return interaction.reply({ content: '❌ Failed to assign role. Make sure the bot role is above the 18+ role in server settings.', ephemeral: true });
+      return interaction.reply({ content: '❌ Failed to assign role. Make sure the bot role is above the 18+ role in server settings.', flags: 64 });
     }
   }
 
   // --- /removerole ---
   if (interaction.commandName === 'removerole') {
     if (!isAdmin) {
-      return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+      return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
     }
     const targetUser = interaction.options.getUser('user');
     try {
       const guild = await client.guilds.fetch(GUILD_ID);
       const member = await guild.members.fetch(targetUser.id);
       if (!member.roles.cache.has(ROLE_18_PLUS_ID)) {
-        return interaction.reply({ content: `⚠️ ${targetUser.tag} doesn't have the 18+ role.`, ephemeral: true });
+        return interaction.reply({ content: `⚠️ ${targetUser.tag} doesn't have the 18+ role.`, flags: 64 });
       }
       await member.roles.remove(ROLE_18_PLUS_ID);
       console.log(`✅ Admin removed 18+ role`);
-      return interaction.reply({ content: `✅ Successfully removed the 18+ role from ${targetUser.tag}.`, ephemeral: true });
+      return interaction.reply({ content: `✅ Successfully removed the 18+ role from ${targetUser.tag}.`, flags: 64 });
     } catch (err) {
       console.error('❌ removerole error:', err);
-      return interaction.reply({ content: '❌ Failed to remove role.', ephemeral: true });
+      return interaction.reply({ content: '❌ Failed to remove role.', flags: 64 });
     }
   }
 
   // --- /checkrole ---
   if (interaction.commandName === 'checkrole') {
     if (!isAdmin) {
-      return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+      return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
     }
     const targetUser = interaction.options.getUser('user');
     try {
@@ -161,18 +165,18 @@ client.on('interactionCreate', async interaction => {
         content: hasRole
           ? `✅ **${targetUser.tag}** has the 18+ role.`
           : `❌ **${targetUser.tag}** does not have the 18+ role.`,
-        ephemeral: true
+        flags: 64
       });
     } catch (err) {
       console.error('❌ checkrole error:', err);
-      return interaction.reply({ content: '❌ Could not find that user in the server.', ephemeral: true });
+      return interaction.reply({ content: '❌ Could not find that user in the server.', flags: 64 });
     }
   }
 
   // --- /rolestats ---
   if (interaction.commandName === 'rolestats') {
     if (!isAdmin) {
-      return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+      return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
     }
     try {
       const guild = await client.guilds.fetch(GUILD_ID);
@@ -182,11 +186,11 @@ client.on('interactionCreate', async interaction => {
       const percentage = ((verifiedMembers / totalMembers) * 100).toFixed(1);
       return interaction.reply({
         content: `📊 **18+ Role Stats**\n✅ Verified members: **${verifiedMembers}**\n👥 Total members: **${totalMembers}**\n📈 Percentage: **${percentage}%**`,
-        ephemeral: true
+        flags: 64
       });
     } catch (err) {
       console.error('❌ rolestats error:', err);
-      return interaction.reply({ content: '❌ Failed to fetch role stats.', ephemeral: true });
+      return interaction.reply({ content: '❌ Failed to fetch role stats.', flags: 64 });
     }
   }
 
@@ -209,25 +213,28 @@ client.on('interactionCreate', async interaction => {
         `**There is no database.** Nothing to breach, nothing to leak.\n\n` +
         `📖 Full Terms of Service: [post link here]\n` +
         `💻 Source Code: [your github link here]`,
-      ephemeral: true
+      flags: 64
     });
   }
+});
+
+client.on('error', (err) => {
+  console.error('Discord client error:', err.message);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err.message);
 });
 
 client.login(DISCORD_TOKEN);
 
 // --- Web Server ---
 const app = express();
+app.set('trust proxy', 1);
 
 // Security headers
-app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    styleSrc: ["'unsafe-inline'"],
-    scriptSrc: ["'none'"],
-    formAction: ["'self'"]
-  }
+app.use(helmet({
+  contentSecurityPolicy: false
 }));
 
 // Skip ngrok browser warning
@@ -275,7 +282,6 @@ const page = (title, color, body) => `
 app.get('/verify', (req, res) => {
   const { discordId } = req.query;
 
-  // Only allow valid Discord IDs (17-19 digit numbers)
   if (!discordId || !/^\d{17,19}$/.test(discordId)) {
     return res.status(400).send('❌ Invalid verification link. Please use /vrcverify in Discord.');
   }
@@ -303,12 +309,10 @@ app.post('/do-verify', async (req, res) => {
   const { username, password, totp, discordId } = req.body;
   req.body = {};
 
-  // Validate discordId
   if (!discordId || !/^\d{17,19}$/.test(discordId)) {
     return res.status(400).send('❌ Invalid request.');
   }
 
-  // Sanitize inputs
   const cleanUsername = validator.escape(username?.trim() || '');
   const cleanTotp = validator.escape(totp?.trim() || '');
 
@@ -449,7 +453,7 @@ async function handleVerification(userData, discordId, res) {
   }
 }
 
-// Global error handler — prevents raw stack traces leaking
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('❌ Unhandled error:', err.message);
   res.status(500).send(page('Error', '#e74c3c', `
@@ -458,4 +462,4 @@ app.use((err, req, res, next) => {
   `));
 });
 
-app.listen(PORT, () => console.log(`🌐 Web server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🌐 Web server running on port ${PORT}`));
