@@ -1,0 +1,60 @@
+Privacy Policy
+VRChat Age Verification Bot
+Last Updated: June 5, 2026
+
+1. Overview
+This Privacy Policy explains how the VRChat Age Verification Bot ("the Bot") handles information when you use it to verify your age in a Discord server. We are committed to protecting your privacy and being transparent about our practices.
+
+2. Information We Do NOT Collect
+We want to be clear about what we never store:
+
+VRChat usernames or email addresses
+VRChat passwords or authentication tokens
+Age verification status or results
+Personal identification information
+IP addresses
+Browser or device information
+Any data from your VRChat profile beyond what is needed for the single verification check
+
+
+3. How the Verification Process Works
+When you use /vrcverify, the following happens:
+
+You are sent a private link to a secure verification page
+You enter your VRChat credentials on that page
+Your credentials are sent directly to VRChat's official API over HTTPS to check your age verification status
+VRChat responds with your age verification result
+Based on that result, a Discord role is assigned or denied
+Your credentials are immediately discarded from memory — they are never written to disk, logged, or retained in any form
+
+This entire process takes place in memory only. There is no database attached to this service.
+
+4. Discord Data
+The only Discord-related data used during verification is your Discord User ID, which is temporarily used to assign your role. It is not stored after the verification process completes.
+
+5. Third Party Services
+This Bot interacts with the following third-party services:
+
+VRChat API — your credentials are sent to VRChat's servers to check age verification status. VRChat's own Terms of Service and Privacy Policy apply to this interaction.
+Discord — the Bot operates within Discord's platform. Discord's Privacy Policy applies to all Discord interactions.
+Railway — the Bot is hosted on Railway's infrastructure. Railway's Privacy Policy applies to hosting.
+
+We are not affiliated with VRChat or Discord.
+
+6. Data Security
+Since no data is stored, there is nothing to breach. Your credentials exist in server memory for less than one second during the verification process and are discarded immediately after.
+All communication between you and the verification page is encrypted via HTTPS.
+
+7. Children's Privacy
+This Bot is designed to verify that users are 18 years of age or older. It is not intended for use by anyone under the age of 18.
+
+8. Your Rights
+Since we store no personal data, there is nothing to request, correct, or delete. If you have concerns about data VRChat or Discord may hold about you, please refer to their respective privacy policies.
+
+9. Changes to This Policy
+This Privacy Policy may be updated at any time. Continued use of the Bot after changes are posted constitutes acceptance of the updated policy.
+
+10. Contact
+If you have questions or concerns about this Privacy Policy, please contact a server administrator through Discord.
+
+This Privacy Policy applies solely to the VRChat Age Verification Bot and does not represent any official affiliation with VRChat or Discord.
